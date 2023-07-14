@@ -1,6 +1,6 @@
 {
-    "name": "test",
-    "description": "Scrape emails from any web page",
+    "name": "GameScore",
+    "description": "Get Game Score when browsing EBGAMES website",
     "version": "1.0",
     "manifest_version": 3,
     "background": {       
@@ -10,6 +10,29 @@
         "default_popup":"popup.html"
     },
 
-    "permissions": ["activeTab","scripting"]
+    
+
+    "declarative_net_request" : {
+      "rule_resources" : [
+          {
+          "id": "ruleset_1",
+          "enabled": true,
+          "path": "ruleset_1.json"
+        }
+      ]
+    },
+    "permissions": [
+      "activeTab",
+      "scripting",
+      "declarativeNetRequest",
+      "declarativeNetRequestFeedback"
+    ],
+    "host_permissions": [
+      "http://www.blogger.com/*",
+      "http://*.google.com/*",
+      "https://www.metacritic.com/"
+    ]
+
+   
 
 }
