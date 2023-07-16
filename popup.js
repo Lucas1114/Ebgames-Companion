@@ -15,42 +15,49 @@ let list = document.getElementById('emailList');
 
 
 
-function getName() {
-  chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-    const tab = tabs[0];
-    const url = tab.url;
+function getGameInfo() {
+  var gameInfo=111;
 
-    //need more if else for console
+  return new Promise((resolve,reject)=>{
 
-    if(url.includes("ebgames.com.au/product")){
-
-      chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        function: extractContent
-      }, function(result) {
-        const gameName = result[0].result;
-        // Sending a message to the background script
-        // chrome.runtime.sendMessage(text);
-        alert(gameName);
-        return gameName;
-      });
-
-    }else{
-      alert("Game Score is only effective on a certain game page of ebgames.com.au.")
-    }
-    
-  });
+    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+      const tab = tabs[0];
+      const url = tab.url;
+      
+      //need more if else for console
+  
+      if(url.includes("ebgames.com.au/product")){
+  
+        chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          function: extractContent
+        }, function(result) {
+          gameInfo = result[0].result;
+          resolve(gameInfo);
+          // Sending a message to the background script
+          // chrome.runtime.sendMessage(gameInfo);
+        });
+      } 
+      else{
+        resolve(null);
+      }    
+    });
+  })
 }
 
 
 
 function extractContent() {
 
-  const h1 = document.querySelector('div.product-header h1');
+  let gameInfo =[];
   //add judge null, and if it is in the correct page, how to let chrome extension detected the qualified page then execute the program
-  const text = h1.childNodes[0].textContent;
+  const gameName = document.querySelector('div.product-header h1').childNodes[0].textContent;
+  const platform = document.getElementsByClassName('product-breadcrumb-item')[3].textContent;
+  
+  gameInfo.push(gameName.trim());
+  gameInfo.push(platform.trim());
 
-  return text;
+  return gameInfo;
   
 }
 
@@ -89,17 +96,60 @@ function getGameScore(url, className) {
 
 
 scrapeEmails.addEventListener("click",async()=>{
+
+
+  getGameInfo().then(result => {
+    var gameInfo = result;
     
-    // const gameName = getName();
+    if(gameInfo===null)
+    {
+      alert("Game Score is only effective on a certain game page of ebgames.com.au.")
+    }
+    else
+    {
+      
+      const gameName = gameInfo[0].replace(/ /g, "-").replace(/:/g, "").replace(/\u00F6/g, "o").replace('-(preowned)', "").toLowerCase();
+      var platform = gameInfo[1].toString();
 
-    const gameUrlOfMetacritic = 'https://www.metacritic.com/game/playstation-5/ea-sports-fc-24'
-    // const gameUrlOfMetacritic = 'https://www.metacritic.com/game/playstation-5/god-of-war-ragnarok'
-    const userScoreClassNameOfMetacritic ='metascore_w user large game positive'
 
-    //assemble url
-    //deal new game without info
+      // chrome.runtime.sendMessage(platform.length);
+      
 
-    getGameScore(gameUrlOfMetacritic,userScoreClassNameOfMetacritic);
+      // for (let i = 0; i < platform.length; i++) {
+      //   let character = platform[i];
+      //   chrome.runtime.sendMessage(character);
+      //   chrome.runtime.sendMessage(i);
+      // }
+      
+     
+      if(platform==="Nintendo Switch"){
+        platform = "switch"
+        
+      }
+      else{
+        platform = gameInfo[1].replace(/ /g, "-").toLowerCase();
+        
+      }
+      
+
+      const gameUrlOfMetacritic = 'https://www.metacritic.com/game/'+platform+'/'+gameName;
+      
+      chrome.runtime.sendMessage(gameUrlOfMetacritic);
+
+      // const gameUrlOfMetacritic = 'https://www.metacritic.com/game/playstation-5/ea-sports-fc-24'
+      // const gameUrlOfMetacritic = 'https://www.metacritic.com/game/playstation-5/god-of-war-ragnarok'
+      const userScoreClassNameOfMetacritic ='metascore_w user large game'
+
+      //assemble url
+      //deal new game without info
+
+      getGameScore(gameUrlOfMetacritic,userScoreClassNameOfMetacritic);
+
+    }
+  });
+
+  
+    
     
     
 
