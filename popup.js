@@ -1,7 +1,5 @@
-let getGameScore = document.getElementById('getGameScore');
+
 let list = document.getElementById('score');
-
-
 
 chrome.runtime.onMessage.addListener((request,sender,sendResponse)=>{
 
@@ -23,33 +21,36 @@ chrome.runtime.onMessage.addListener((request,sender,sendResponse)=>{
   // Append the link to a container element
   list.appendChild(button);
 
-
-
-
-
-
-  // let li1 = document.createElement('li');
-  // li1.innerText = gameScore;
-  // list.appendChild(li1);
-
-  // let li2 = document.createElement('li');
-  // li2.innerText = url+'/user-reviews'
-  // list.appendChild(li2);
-      
 });
 
-getGameScore.addEventListener("click",async()=>{
+
+
+document.addEventListener("DOMContentLoaded", function () {
+  // Trigger the function when the popup is opened
+  myFunction();
+});
+
+
+  
+
+async function myFunction(){
 
   getGameInfo().then(result => {
     var gameInfo = result;
     
     if(gameInfo===null)
     {
-      alert("Game Score is only effective on a certain game page of ebgames.com.au.")
+
+      msg('https://www.metacritic.com/game/playstation-5/god-of-war-ragnarok');
+
+ 
+      // alert("Game Score is only effective on a certain game page of ebgames.com.au.")
+
     }
     else
     {
-      const gameName = gameInfo[0].replace(/ /g, "-").replace(/:/g, "").replace(/\u00F6/g, "o").replace('-(preowned)', "").toLowerCase();
+      
+      const gameName = gameInfo[0].replace(/ /g, "-").replace(/:/g, "").replace(/\u00F6/g, "o").replace('-(preowned)', "").replace('-Day-One-Edition',"").toLowerCase();
       var platform = gameInfo[1].toString();
 
       if(platform==="Nintendo Switch"){
@@ -61,7 +62,7 @@ getGameScore.addEventListener("click",async()=>{
       
       const gameUrlOfMetacritic = 'https://www.metacritic.com/game/'+platform+'/'+gameName;
       
-      chrome.runtime.sendMessage(gameUrlOfMetacritic);
+      // chrome.runtime.sendMessage(gameUrlOfMetacritic);
 
       // const gameUrlOfMetacritic = 'https://www.metacritic.com/game/playstation-5/ea-sports-fc-24'
       // const gameUrlOfMetacritic = 'https://www.metacritic.com/game/playstation-5/god-of-war-ragnarok'
@@ -80,7 +81,7 @@ getGameScore.addEventListener("click",async()=>{
     //get the score from the info(RegEx???)
     //place the score on the 
     //multiple game website, attache link url
-})
+}
 
 
 
@@ -103,8 +104,6 @@ function getGameInfo() {
         }, function(result) {
           gameInfo = result[0].result;
           resolve(gameInfo);
-          // Sending a message to the background script
-          // chrome.runtime.sendMessage(gameInfo);
         });
       } 
       else{
@@ -155,15 +154,15 @@ async function getScore(url, className) {
         let [tab] = await chrome.tabs.query({
           active:true, currentWindow: true
         });
+
+        
     
         chrome.scripting.executeScript({
             target:{tabId:tab.id},
             func:sendResult,
             args:[gameScore,url]            
         });
-
       })
-      
       .catch(error => {
         console.error('An error occurred:', error);
       });
@@ -173,7 +172,30 @@ async function getScore(url, className) {
 
 function sendResult(gameScore,url){
   chrome.runtime.sendMessage({gameScore,url});
-  // chrome.runtime.sendMessage(12345);
+}
+
+
+
+async function msg(url) {
+  return fetch(url)
+      .then(()=>{
+        return 'Game Score is only effective on a certain game page of ebgames.com.au.';
+      })
+      .then(async(gameScore) =>{
+        let [tab] = await chrome.tabs.query({
+          active:true, currentWindow: true
+        });
+
+        
+        chrome.scripting.executeScript({
+            target:{tabId:tab.id},
+            func:sendResult,
+            args:[gameScore,url]            
+        });
+      })
+      .catch(error => {
+        console.error('An error occurred:', error);
+      });
 }
 
 
