@@ -1,13 +1,54 @@
 body{
-    min-width: 300px;
+    min-width: 400px;
 }
 
 
 .center{
     text-align: center;
+    
+    
 }
 
 ul{
     list-style: none;
     text-align: left;
 }
+
+
+
+#game {
+    display:flex;
+    justify-content: space-between;
+}
+
+#gameName {
+    font-size: 32px;
+    color: black;
+}
+
+#platform {
+    font-size: 10px;
+    color: grey;
+}
+
+
+
+#info{
+    display: flex;
+    justify-content: space-between;
+}
+  
+#circle {
+    width: 50px; /* Adjust this value to change the circle size */
+    height: 50px; /* Should be equal to the width to create a perfect circle */
+    border-radius: 50%; /* Creates a circle shape */
+    /* background-color: #f0f0f0; Background color of the circle */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px; /* Adjust this value to change the font size of the number */
+    font-weight: bold;
+    color: white;
+    line-height: 100px;
+  }
+  

@@ -5,21 +5,60 @@ chrome.runtime.onMessage.addListener((request,sender,sendResponse)=>{
 
   let gameScore = request.gameScore;
   let url = request.url;
+  
 
 
+  const game = document.createElement('div');
+  game.id='game';
+
+  const gameName = document.createElement('a');
+  gameName.id='gameName';
+  gameName.textContent = request.gameName;
+  game.appendChild(gameName);
+
+  const platform = document.createElement('a');
+  platform.id = 'platform';
+  platform.textContent = request.platform;
+  game.appendChild(platform);
+
+  list.appendChild(game);
+
+
+
+  const info = document.createElement('div');
+  info.id = 'info';
+
+  const circle = document.createElement('p');
+  circle.id='circle';
+  const number = document.createElement('span');
+  number.id='number';
+  number.textContent = gameScore;
+
+  const gameScoreNumber = parseFloat(gameScore);
+  let circleColor = 'green';
+  if(gameScoreNumber < 7.5 && gameScoreNumber >= 5.0){
+    circleColor = 'orange';
+  }else if(gameScore < 5.0){
+    circleColor ='red';
+  };
+  circle.style.backgroundColor = circleColor;
+
+  circle.appendChild(number);
+  info.appendChild(circle);
+  
   // Create a button element
   const button = document.createElement('button');
-  button.textContent = gameScore;
+  button.textContent = "User Reviews";
 
   // Add a click event listener to the button
   button.addEventListener("click", function() {
     // Open a website in a new tab or window
     window.open(url+'/user-reviews');
   });
-
-
   // Append the link to a container element
-  list.appendChild(button);
+  info.appendChild(button);
+
+  list.appendChild(info);
 
 });
 
@@ -40,17 +79,13 @@ async function myFunction(){
     
     if(gameInfo===null)
     {
-
-      msg('https://www.metacritic.com/game/playstation-5/god-of-war-ragnarok');
-
- 
-      // alert("Game Score is only effective on a certain game page of ebgames.com.au.")
-
+      msg("Game Score is only effective on a certain game page of ebgames.com.au.", "");
     }
     else
     {
       
-      const gameName = gameInfo[0].replace(/ /g, "-").replace(/:/g, "").replace(/\u00F6/g, "o").replace('-(preowned)', "").replace('-Day-One-Edition',"").toLowerCase();
+      
+      const gameName = gameInfo[0].replace(/\u00F6/g, "o").replace(' (preowned)', "").replace(' Day One Edition',"");
       var platform = gameInfo[1].toString();
 
       if(platform==="Nintendo Switch"){
@@ -60,18 +95,18 @@ async function myFunction(){
         platform = gameInfo[1].replace(/ /g, "-").toLowerCase();
       }
       
-      const gameUrlOfMetacritic = 'https://www.metacritic.com/game/'+platform+'/'+gameName;
+      const gameUrlOfMetacritic = 'https://www.metacritic.com/game/'+platform+'/'+gameName.replace(/:/g, "").replace(/ /g, "-").toLowerCase();
       
-      // chrome.runtime.sendMessage(gameUrlOfMetacritic);
-
-      // const gameUrlOfMetacritic = 'https://www.metacritic.com/game/playstation-5/ea-sports-fc-24'
-      // const gameUrlOfMetacritic = 'https://www.metacritic.com/game/playstation-5/god-of-war-ragnarok'
-      const userScoreClassNameOfMetacritic ='metascore_w user large game'
+      chrome.runtime.sendMessage(gameUrlOfMetacritic);
+       
+      // judge not released vs not found
+      // https://www.ebgames.com.au/product/ps4/215556-zombie-vikings-ragnarok-edition-preowned
+      
 
       //assemble url
       //deal new game without info
       
-      getScore(gameUrlOfMetacritic,userScoreClassNameOfMetacritic);
+      getScore(gameUrlOfMetacritic,gameName,gameInfo[1].toString());
 
     }
   });
@@ -130,14 +165,14 @@ function extractContent() {
 }
 
 
-async function getScore(url, className) {
+async function getScore(url,gameName,platform) {
   return fetch(url)
       .then(response => response.text())
       .then(html => {
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
 
-        const gameScoreElement = doc.getElementsByClassName(className);
+        const gameScoreElement = doc.getElementsByClassName('metascore_w user large game');
         let gameScore;
         
         if(gameScoreElement.length === 0){
@@ -160,7 +195,7 @@ async function getScore(url, className) {
         chrome.scripting.executeScript({
             target:{tabId:tab.id},
             func:sendResult,
-            args:[gameScore,url]            
+            args:[gameScore,url,gameName,platform]            
         });
       })
       .catch(error => {
@@ -170,34 +205,22 @@ async function getScore(url, className) {
 
 
 
-function sendResult(gameScore,url){
-  chrome.runtime.sendMessage({gameScore,url});
-}
+async function msg(gameScore){
+      let [tab] = await chrome.tabs.query({
+        active:true, currentWindow: true
+      });
 
-
-
-async function msg(url) {
-  return fetch(url)
-      .then(()=>{
-        return 'Game Score is only effective on a certain game page of ebgames.com.au.';
-      })
-      .then(async(gameScore) =>{
-        let [tab] = await chrome.tabs.query({
-          active:true, currentWindow: true
-        });
-
-        
-        chrome.scripting.executeScript({
-            target:{tabId:tab.id},
-            func:sendResult,
-            args:[gameScore,url]            
-        });
-      })
-      .catch(error => {
-        console.error('An error occurred:', error);
+      
+      chrome.scripting.executeScript({
+          target:{tabId:tab.id},
+          func:sendResult,
+          args:[gameScore]            
       });
 }
 
+function sendResult(gameScore,url,gameName,platform){
+  chrome.runtime.sendMessage({gameScore,url,gameName,platform});
+}
 
 
 
