@@ -3,60 +3,64 @@ let list = document.getElementById('score');
 
 chrome.runtime.onMessage.addListener((request,sender,sendResponse)=>{
 
-  let gameScore = request.gameScore;
-  let url = request.url;
-  
 
-
-  const game = document.createElement('div');
-  game.id='game';
-
-  const gameName = document.createElement('a');
+  const gameName = document.createElement('div');
   gameName.id='gameName';
   gameName.textContent = request.gameName;
-  game.appendChild(gameName);
+  // game.appendChild(gameName);
+  list.appendChild(gameName);
 
-  const platform = document.createElement('a');
+  const platform = document.createElement('div');
   platform.id = 'platform';
   platform.textContent = request.platform;
-  game.appendChild(platform);
+  // game.appendChild(platform);
+  list.appendChild(platform);
 
-  list.appendChild(game);
+  // list.appendChild(game);
 
 
 
   const info = document.createElement('div');
   info.id = 'info';
 
-  const circle = document.createElement('p');
-  circle.id='circle';
-  const number = document.createElement('span');
-  number.id='number';
-  number.textContent = gameScore;
+  const gameScore = document.createElement('span');
+  gameScore.id='gameScore';
+  const gameScore_text = request.gameScore
+  gameScore.textContent = gameScore_text;
 
-  const gameScoreNumber = parseFloat(gameScore);
-  let circleColor = 'green';
-  if(gameScoreNumber < 7.5 && gameScoreNumber >= 5.0){
-    circleColor = 'orange';
-  }else if(gameScore < 5.0){
-    circleColor ='red';
-  };
-  circle.style.backgroundColor = circleColor;
+  if(gameScore_text=="Not Released"){
+  
+    gameScore.style.backgroundColor = 'black';
+    gameScore.style.fontSize = '16px';
 
-  circle.appendChild(number);
-  info.appendChild(circle);
+    
+  }else{
+    const gameScoreNumber = parseFloat(gameScore_text);
+    let circleColor = 'green';
+    if(gameScoreNumber < 7.5 && gameScoreNumber >= 5.0){
+      circleColor = 'orange';
+    }else if(gameScoreNumber < 5.0){
+      circleColor ='red';
+    };
+    
+    gameScore.style.fontSize = '16px';
+    gameScore.style.backgroundColor = circleColor;
+  }
+
+  info.appendChild(gameScore);
   
   // Create a button element
-  const button = document.createElement('button');
-  button.textContent = "User Reviews";
+  const userReview = document.createElement('button');
+  userReview.id = 'userReview';
+  userReview.textContent = "User Reviews";
 
   // Add a click event listener to the button
-  button.addEventListener("click", function() {
+  userReview.addEventListener("click", function() {
     // Open a website in a new tab or window
-    window.open(url+'/user-reviews');
+    window.open(request.url+'/user-reviews');
   });
   // Append the link to a container element
-  info.appendChild(button);
+  info.appendChild(userReview);
 
   list.appendChild(info);
 
@@ -83,9 +87,7 @@ async function myFunction(){
     }
     else
     {
-      
-      
-      const gameName = gameInfo[0].replace(/\u00F6/g, "o").replace(' (preowned)', "").replace(' Day One Edition',"");
+      const gameName = gameInfo[0].replace(/\u00F6/g, "o").replace(' (preowned)', "").replace(' Day One Edition',"").replace(' - Deluxe Edition',"");
       var platform = gameInfo[1].toString();
 
       if(platform==="Nintendo Switch"){
@@ -95,7 +97,7 @@ async function myFunction(){
         platform = gameInfo[1].replace(/ /g, "-").toLowerCase();
       }
       
-      const gameUrlOfMetacritic = 'https://www.metacritic.com/game/'+platform+'/'+gameName.replace(/:/g, "").replace(/ /g, "-").toLowerCase();
+      const gameUrlOfMetacritic = 'https://www.metacritic.com/game/'+platform+'/'+gameName.replace(/:/g, "").replace(/ /g, "-").replace("'","").toLowerCase();
       
       chrome.runtime.sendMessage(gameUrlOfMetacritic);
        
@@ -176,7 +178,7 @@ async function getScore(url,gameName,platform) {
         let gameScore;
         
         if(gameScoreElement.length === 0){
-          gameScore = "No score until game release"
+          gameScore = "Not Released";
           
         }else{
           gameScore = gameScoreElement[0].textContent;
