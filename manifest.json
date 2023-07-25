@@ -7,12 +7,17 @@
         "service_worker": "background.js"
     },      
     "action":{
-        "default_popup":"popup.html"
+        "default_popup":"popup.html",
+        "default_icon": "icons/111.png"
+         
     },
 
-    
-
-    
+    "content_scripts": [
+      {
+        "matches": ["https://example.com/*"], 
+        "js": ["content.js"]
+      }
+    ],
 
     "declarative_net_request" : {
       "rule_resources" : [
@@ -24,6 +29,8 @@
       ]
     },
     "permissions": [
+      "tabs",
+      "webNavigation",
       "activeTab",
       "scripting",
       "declarativeNetRequest",

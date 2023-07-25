@@ -1,4 +1,10 @@
 
+
+
+
+
+
+
 let list = document.getElementById('score');
 
 chrome.runtime.onMessage.addListener((request,sender,sendResponse)=>{

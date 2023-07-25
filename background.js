@@ -28,6 +28,47 @@ chrome.action.onClicked.addListener((tab) => {
 
 
 
+chrome.tabs.onActivated.addListener((activeInfo) => {
+  
+  chrome.tabs.get(activeInfo.tabId, (tab) => {
+    if (chrome.runtime.lastError) {
+      console.error(chrome.runtime.lastError.message);
+      return;
+    }
+    
+
+    const url = tab.url;
+    console.log('111');
+    if (url.includes('ebgames.com.au/product')) {
+      
+      chrome.action.setIcon({ path: 'icons/222.png' });
+      
+    } else {
+      chrome.action.setIcon({ path: 'icons/111.png' });  
+    }
+  });
+});
+
+
+
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  // Make sure the status is "complete" to ensure the page has finished loading
+  // if (changeInfo.status === "complete") {
+    // const url = tab.url;
+    
+    if (tab&&tab.url.includes('ebgames.com.au/product')) {
+      
+      chrome.action.setIcon({ path: 'icons/222.png' });
+      
+    } else {
+      chrome.action.setIcon({ path: 'icons/111.png' });  
+    }
+  // }
+});
+
+
+
+
 
 
 
