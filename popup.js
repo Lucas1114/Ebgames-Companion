@@ -2,6 +2,11 @@
 
 
 
+const warning = "No game found on current page.\n"+
+"Please access a certain game page on ebgames.\n"+
+"The extension icon will show '1' in its right bottom corner once available game detected.\n"+
+"Then click the extension icon to view the score and user review from Metacritic."
+
 
 
 
@@ -9,66 +14,104 @@ let list = document.getElementById('score');
 
 chrome.runtime.onMessage.addListener((request,sender,sendResponse)=>{
 
+  const gameScore_text = request.gameScore;
 
-  const gameName = document.createElement('div');
-  gameName.id='gameName';
-  gameName.textContent = request.gameName;
-  // game.appendChild(gameName);
-  list.appendChild(gameName);
+  if(gameScore_text==warning){
+    // alert('111')
 
-  const platform = document.createElement('div');
-  platform.id = 'platform';
-  platform.textContent = request.platform;
-  // game.appendChild(platform);
-  list.appendChild(platform);
+    const noGame = document.createElement('div');
+    noGame.id='noGame';
+    const p1 = document.createElement('p');
+    const p2 = document.createElement('p');
+    const p3 = document.createElement('p');
+    const p4 = document.createElement('p');
 
-  // list.appendChild(game);
+    const gameScore_text_array = gameScore_text.split('\n');
 
-
-
-  const info = document.createElement('div');
-  info.id = 'info';
-
-  const gameScore = document.createElement('span');
-  gameScore.id='gameScore';
-  const gameScore_text = request.gameScore
-  gameScore.textContent = gameScore_text;
-
-  if(gameScore_text=="Not Released"){
-  
-    gameScore.style.backgroundColor = 'black';
-    gameScore.style.fontSize = '16px';
-
+    p1.textContent = gameScore_text_array[0];
+    p2.textContent = gameScore_text_array[1];
+    p3.textContent = gameScore_text_array[2];
+    p4.textContent = gameScore_text_array[3];
     
+    noGame.appendChild(p1);
+    noGame.appendChild(p2);
+    noGame.appendChild(p3);
+    noGame.appendChild(p4);
+    list.appendChild(noGame);
+
   }else{
-    const gameScoreNumber = parseFloat(gameScore_text);
-    let circleColor = 'green';
-    if(gameScoreNumber < 7.5 && gameScoreNumber >= 5.0){
-      circleColor = 'orange';
-    }else if(gameScoreNumber < 5.0){
-      circleColor ='red';
-    };
+    // alert('112')
+
+    const gameName = document.createElement('div');
+    gameName.id='gameName';
+    gameName.textContent = request.gameName;
+    list.appendChild(gameName);
+
+    const platform = document.createElement('div');
+    platform.id = 'platform';
+    const platform_text = request.platform;
+    platform.textContent = platform_text;
+    let platform_color = 'black';
+    if(platform_text.includes('PlayStation')){
+      platform_color = 'blue';
+
+    }else if(platform_text.includes('Xbox')){
+      platform_color = 'lightgreen';
+    }else if(platform_text=='Nintendo Switch'){
+      platform_color = 'red';
+    }
+    platform.style.color = platform_color;
+    list.appendChild(platform);
+
+    // list.appendChild(game);
+
+
+
+    const info = document.createElement('div');
+    info.id = 'info';
+
+    const gameScore = document.createElement('span');
+    gameScore.id='gameScore';
     
-    gameScore.style.fontSize = '16px';
-    gameScore.style.backgroundColor = circleColor;
+    gameScore.textContent = gameScore_text;
+
+    if(gameScore_text=="Not Released"){
+    
+      gameScore.style.backgroundColor = 'black';
+      gameScore.style.fontSize = '16px';
+
+      
+    }else{
+      const gameScoreNumber = parseFloat(gameScore_text);
+      let circleColor = 'green';
+      if(gameScoreNumber < 7.5 && gameScoreNumber >= 5.0){
+        circleColor = 'orange';
+      }else if(gameScoreNumber < 5.0){
+        circleColor ='red';
+      };
+      
+      gameScore.style.fontSize = '16px';
+      gameScore.style.backgroundColor = circleColor;
+    }
+
+    info.appendChild(gameScore);
+    
+    // Create a button element
+    const userReview = document.createElement('button');
+    userReview.id = 'userReview';
+    userReview.textContent = "User Reviews";
+
+    // Add a click event listener to the button
+    userReview.addEventListener("click", function() {
+      // Open a website in a new tab or window
+      window.open(request.url+'/user-reviews');
+    });
+    // Append the link to a container element
+    info.appendChild(userReview);
+
+    list.appendChild(info);
+
   }
-
-  info.appendChild(gameScore);
-  
-  // Create a button element
-  const userReview = document.createElement('button');
-  userReview.id = 'userReview';
-  userReview.textContent = "User Reviews";
-
-  // Add a click event listener to the button
-  userReview.addEventListener("click", function() {
-    // Open a website in a new tab or window
-    window.open(request.url+'/user-reviews');
-  });
-  // Append the link to a container element
-  info.appendChild(userReview);
-
-  list.appendChild(info);
 
 });
 
@@ -87,13 +130,13 @@ async function myFunction(){
   getGameInfo().then(result => {
     var gameInfo = result;
     
-    if(gameInfo===null)
+    if(gameInfo===null || gameInfo[2]!='Video Games')
     {
-      msg("Game Score is only effective on a certain game page of ebgames.com.au.", "");
+      msg(warning);
     }
     else
     {
-      const gameName = gameInfo[0].replace(/\u00F6/g, "o").replace(' (preowned)', "").replace(' Day One Edition',"").replace(' - Deluxe Edition',"");
+      const gameName = gameInfo[0].replace(/\u00F6/g, "o").replace(' (preowned)', "").replace(' Day One Edition',"").replace(' Deluxe Edition',"").replace(' -',"");
       var platform = gameInfo[1].toString();
 
       if(platform==="Nintendo Switch"){
@@ -136,7 +179,7 @@ function getGameInfo() {
     chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
       const tab = tabs[0];
       const url = tab.url;
-      
+      chrome.runtime.sendMessage(tab.id);
       //need more if else for console
   
       if(url.includes("ebgames.com.au/product")){
@@ -164,9 +207,12 @@ function extractContent() {
   //add judge null, and if it is in the correct page, how to let chrome extension detected the qualified page then execute the program
   const gameName = document.querySelector('div.product-header h1').childNodes[0].textContent;
   const platform = document.getElementsByClassName('product-breadcrumb-item')[3].textContent;
+  const category = document.getElementsByClassName('product-breadcrumb-item')[2].textContent;
+ 
   
   gameInfo.push(gameName.trim());
   gameInfo.push(platform.trim());
+  gameInfo.push(category.trim());
 
   return gameInfo;
   

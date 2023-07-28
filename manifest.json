@@ -14,7 +14,7 @@
 
     "content_scripts": [
       {
-        "matches": ["https://example.com/*"], 
+        "matches": ["<all_urls>"], 
         "js": ["content.js"]
       }
     ],
@@ -39,6 +39,7 @@
     "host_permissions": [
       "http://www.blogger.com/*",
       "http://*.google.com/*",
+      "https://www.ebgames.com.au/*",
       "https://www.metacritic.com/"
     ]
 
