@@ -4,7 +4,7 @@
 
 const warning = "No game found on current page.\n"+
 "Please access a certain game page on ebgames.\n"+
-"The extension icon will show '1' in its right bottom corner once available game detected.\n"+
+"The extension icon background color will change from blue to green once available game detected.\n"+
 "Then click the extension icon to view the score and user review from Metacritic."
 
 
@@ -14,7 +14,7 @@ let list = document.getElementById('score');
 
 chrome.runtime.onMessage.addListener((request,sender,sendResponse)=>{
 
-  const gameScore_text = request.gameScore;
+  let gameScore_text = request.gameScore;
 
   if(gameScore_text==warning){
     // alert('111')
@@ -72,6 +72,10 @@ chrome.runtime.onMessage.addListener((request,sender,sendResponse)=>{
 
     const gameScore = document.createElement('span');
     gameScore.id='gameScore';
+
+    if(gameScore_text=='tbd'){
+      gameScore_text = "Not Released";
+    }
     
     gameScore.textContent = gameScore_text;
 

@@ -1,5 +1,5 @@
 function extractContent() {
-  console.log(222)
+  
 
   let gameInfo =[];
   //add judge null, and if it is in the correct page, how to let chrome extension detected the qualified page then execute the program
@@ -18,4 +18,5 @@ function extractContent() {
 
 
 chrome.runtime.sendMessage(extractContent());
+// chrome.runtime.sendMessage([]);
   
