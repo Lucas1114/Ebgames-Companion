@@ -3,21 +3,21 @@
 
 
 const warning = "No game found on current page.\n"+
-"Please access a certain game page on ebgames.\n"+
+"Please visit\n"+
 "The extension icon background color will change from blue to green once available game detected.\n"+
 "Then click the extension icon to view the score and user review from Metacritic."
-
 
 
 
 let list = document.getElementById('score');
 
 chrome.runtime.onMessage.addListener((request,sender,sendResponse)=>{
-
+  
   let gameScore_text = request.gameScore;
-
+  
   if(gameScore_text==warning){
-    // alert('111')
+    
+ 
 
     const noGame = document.createElement('div');
     noGame.id='noGame';
@@ -32,7 +32,20 @@ chrome.runtime.onMessage.addListener((request,sender,sendResponse)=>{
     p2.textContent = gameScore_text_array[1];
     p3.textContent = gameScore_text_array[2];
     p4.textContent = gameScore_text_array[3];
-    
+
+
+    const ebgames = document.createElement('a');
+    ebgames.textContent = 'Ebgames';
+    ebgames.addEventListener("click", function() {
+      // Open a website in a new tab or window
+      window.open('https://www.ebgames.com.au/search?category=gaming&subcategory=gaming-video-game');
+    });
+    ebgames.style.textDecoration = 'underline';
+    ebgames.style.cursor = 'pointer';
+    p2.appendChild(ebgames);
+    p2.appendChild(document.createTextNode("and select a game."));
+
+
     noGame.appendChild(p1);
     noGame.appendChild(p2);
     noGame.appendChild(p3);
@@ -136,7 +149,9 @@ async function myFunction(){
     
     if(gameInfo===null || gameInfo[2]!='Video Games')
     {
+      
       msg(warning);
+      
     }
     else
     {
@@ -268,15 +283,23 @@ async function msg(gameScore){
         active:true, currentWindow: true
       });
 
-      
-      chrome.scripting.executeScript({
+      if (tab.url && tab.url.includes('chrome://')) {
+        sendResult(gameScore)
+
+      }else{
+
+        chrome.scripting.executeScript({
           target:{tabId:tab.id},
           func:sendResult,
           args:[gameScore]            
-      });
+        });
+
+
+      }
 }
 
 function sendResult(gameScore,url,gameName,platform){
+  
   chrome.runtime.sendMessage({gameScore,url,gameName,platform});
 }
 

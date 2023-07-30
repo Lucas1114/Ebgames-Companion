@@ -1,15 +1,18 @@
 {
-    "name": "GameScore",
-    "description": "Get Game Score when browsing EBGAMES website",
-    "version": "1.0",
+    "name": "Ebgames Companion",
+    "description": "This extension will show the user score and review(from Metacritic) of any game on Ebgames.com.au, which help gamers choose games.",
+    "version": "1.0.0",
     "manifest_version": 3,
+    
     "background": {       
         "service_worker": "background.js"
     },      
+
     "action":{
         "default_popup":"popup.html"
 
     },
+
 
     "icons":  {
       "16": "icons/b16.png",
@@ -19,34 +22,20 @@
 
     "content_scripts": [
       {
-        "matches": ["<all_urls>"], 
+        "matches": ["https://www.ebgames.com.au/product/*"], 
+        
         "js": ["content.js"]
       }
     ],
 
-    "declarative_net_request" : {
-      "rule_resources" : [
-          {
-          "id": "ruleset_1",
-          "enabled": true,
-          "path": "ruleset_1.json"
-        }
-      ]
-    },
     "permissions": [
       "tabs",
-      "webNavigation",
       "activeTab",
-      "scripting",
-      "declarativeNetRequest",
-      "declarativeNetRequestFeedback"
+      "scripting"
     ],
     "host_permissions": [
       
-      "https://www.ebgames.com.au/*"
-      
+      "https://www.ebgames.com.au/product/*",
+      "https://www.Metacritic.com/*"
     ]
-
-   
-
 }

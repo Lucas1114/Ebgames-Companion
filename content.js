@@ -18,5 +18,5 @@ function extractContent() {
 
 
 chrome.runtime.sendMessage(extractContent());
-// chrome.runtime.sendMessage([]);
+
   
